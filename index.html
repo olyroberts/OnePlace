@@ -1094,37 +1094,65 @@
   .day-nav-label .dn-date { font-size: 14.5px; font-weight: 600; }
   .day-nav-label .dn-sub { font-size: 11px; color: var(--text-faint); margin-top: 1px; }
   .day-nav-label .dn-sub.is-today { color: #1d6b51; font-weight: 600; }
-  .nav-label-click { cursor: pointer; border-radius: 7px; padding: 2px 6px; transition: background 0.12s; }
+  .nav-label-click { cursor: pointer; border-radius: 7px; padding: 2px 6px; transition: background 0.12s; position: relative; }
   .nav-label-click:hover { background: var(--surface-2); }
-  .nav-date-edit { flex: 1; display: flex; justify-content: center; align-items: center; gap: 6px; position: relative; }
-  .nav-date-fields {
-    display: inline-flex; align-items: center; gap: 2px;
-    border: 1px solid var(--gold); border-radius: 7px;
-    padding: 4px 8px; background: var(--surface);
+
+  /* --- свой выпадающий календарь --- */
+  .dp-pop {
+    position: absolute; z-index: 1000;
+    background: var(--surface); border: 1px solid var(--line);
+    border-radius: 12px; padding: 12px;
+    box-shadow: 0 8px 28px rgba(0,0,0,0.16);
+    width: 256px; user-select: none;
   }
-  .ndf-seg {
-    font-family: inherit; font-size: 14px; text-align: center;
-    border: none; background: transparent; color: var(--text);
-    padding: 2px 0;
+  .dp-head { display: flex; align-items: center; gap: 6px; margin-bottom: 10px; }
+  .dp-title {
+    flex: 1; text-align: center; font-size: 14px; font-weight: 600; color: var(--text);
+    cursor: pointer; border-radius: 6px; padding: 4px 6px; transition: background 0.12s;
   }
-  .ndf-seg:focus { outline: none; background: #f3e6c4; border-radius: 4px; }
-  .ndf-seg::placeholder { color: var(--text-faint); }
-  .ndf-dd, .ndf-mm { width: 26px; }
-  .ndf-yyyy { width: 42px; }
-  .ndf-sep { color: var(--text-faint); font-size: 14px; }
-  .nav-cal-btn {
-    font-family: inherit; font-size: 15px; line-height: 1;
-    width: 32px; height: 32px; padding: 0; border-radius: 7px; cursor: pointer;
+  .dp-title:hover { background: var(--surface-2); }
+  .dp-title .dp-caret { font-size: 9px; color: var(--text-faint); margin-left: 4px; }
+  /* строка года под месяцем */
+  .dp-yearbar { display: flex; align-items: center; justify-content: center; gap: 8px; margin-bottom: 10px; }
+  .dp-yearbar .dp-ynav {
+    width: 24px; height: 24px; cursor: pointer;
     border: 1px solid var(--line); background: var(--surface-2); color: var(--text-dim);
-    display: inline-flex; align-items: center; justify-content: center;
-    transition: all 0.12s; flex-shrink: 0;
+    border-radius: 6px; font-size: 13px; line-height: 1;
+    display: inline-flex; align-items: center; justify-content: center; transition: all 0.12s;
   }
-  .nav-cal-btn:hover { border-color: var(--gold); }
-  .nav-native-date {
-    position: absolute; left: 50%; bottom: 0; transform: translateX(-50%);
-    width: 1px; height: 1px;
-    opacity: 0; pointer-events: none; border: 0; padding: 0; margin: 0;
+  .dp-yearbar .dp-ynav:hover { border-color: var(--gold); color: var(--gold); }
+  .dp-yearbar .dp-yval {
+    font-size: 13px; font-weight: 600; color: var(--text); cursor: pointer;
+    padding: 3px 10px; border-radius: 6px; transition: background 0.12s; min-width: 48px; text-align: center;
   }
+  .dp-yearbar .dp-yval:hover { background: var(--surface-2); }
+  .dp-nav {
+    width: 28px; height: 28px; flex-shrink: 0; cursor: pointer;
+    border: 1px solid var(--line); background: var(--surface-2); color: var(--text-dim);
+    border-radius: 7px; font-size: 14px; line-height: 1;
+    display: inline-flex; align-items: center; justify-content: center; transition: all 0.12s;
+  }
+  .dp-nav:hover { border-color: var(--gold); color: var(--gold); }
+  .dp-grid { display: grid; grid-template-columns: repeat(7, 1fr); gap: 2px; }
+  .dp-dow { font-size: 10.5px; font-weight: 600; color: var(--text-faint); text-align: center; padding: 3px 0; }
+  .dp-day {
+    font-size: 12.5px; text-align: center; padding: 6px 0; border-radius: 6px;
+    cursor: pointer; color: var(--text); transition: background 0.1s;
+  }
+  .dp-day:hover { background: var(--surface-2); }
+  .dp-day.dp-other { color: var(--text-faint); }
+  .dp-day.dp-today { color: var(--gold); font-weight: 700; }
+  .dp-day.dp-sel { background: var(--gold); color: #fff; }
+  .dp-day.dp-sel:hover { background: var(--gold); }
+  .dp-years { display: grid; grid-template-columns: repeat(4, 1fr); gap: 4px; }
+  .dp-year {
+    font-size: 12.5px; text-align: center; padding: 9px 0; border-radius: 7px;
+    cursor: pointer; color: var(--text); transition: background 0.1s;
+  }
+  .dp-year:hover { background: var(--surface-2); }
+  .dp-year.dp-today { color: var(--gold); font-weight: 700; }
+  .dp-year.dp-sel { background: var(--gold); color: #fff; }
+  .dp-year.dp-sel:hover { background: var(--gold); }
   .hidden { display: none; }
   .day-today-btn {
     font-family: inherit; font-size: 11.5px;
@@ -1596,30 +1624,12 @@
   <div class="tab-page" id="page-week">
     <div class="week-nav">
       <button class="week-nav-btn" onclick="weekShift(-1)" title="Previous week">‹</button>
-      <div class="week-nav-label nav-label-click" id="week-label" onclick="openWeekDatePicker()" title="Click to pick or type a date">
+      <div class="week-nav-label nav-label-click" id="week-label" onclick="openWeekCalendar()" title="Click to pick a date">
         <div class="wn-range" id="week-range">—</div>
         <div class="wn-sub" id="week-sub"></div>
       </div>
-      <div class="nav-date-edit hidden" id="week-date-edit">
-        <span class="nav-date-fields">
-          <input type="text" inputmode="numeric" maxlength="2" class="ndf-seg ndf-dd" id="week-dd"
-            placeholder="DD" oninput="onSegInput('week','dd')" onkeydown="onSegKey(event,'week','dd')"
-            onfocus="this.select()">
-          <span class="ndf-sep">/</span>
-          <input type="text" inputmode="numeric" maxlength="2" class="ndf-seg ndf-mm" id="week-mm"
-            placeholder="MM" oninput="onSegInput('week','mm')" onkeydown="onSegKey(event,'week','mm')"
-            onfocus="this.select()">
-          <span class="ndf-sep">/</span>
-          <input type="text" inputmode="numeric" maxlength="4" class="ndf-seg ndf-yyyy" id="week-yyyy"
-            placeholder="YYYY" oninput="onSegInput('week','yyyy')" onkeydown="onSegKey(event,'week','yyyy')"
-            onfocus="this.select()">
-        </span>
-        <button type="button" class="nav-cal-btn" title="Open calendar"
-          onmousedown="event.preventDefault()" onclick="showWeekPicker()">📅</button>
-        <input type="date" class="nav-native-date" id="week-date-input" onchange="onNativeWeekPick(this.value)">
-      </div>
-      <button class="week-nav-btn" onclick="weekShift(1)" title="Next week">›</button>
       <button class="week-today-btn" id="week-today-btn" onclick="weekToday()">This week</button>
+      <button class="week-nav-btn" onclick="weekShift(1)" title="Next week">›</button>
     </div>
     <div class="week-toolbar">
       <button class="ov-mode-btn" id="week-order-btn" onclick="toggleWeekOrder()">↕ Tile order</button>
@@ -1636,30 +1646,12 @@
   <div class="tab-page" id="page-day">
     <div class="day-nav">
       <button class="day-nav-btn" onclick="dayShift(-1)" title="Yesterday">‹</button>
-      <div class="day-nav-label nav-label-click" id="day-label" onclick="openDayDatePicker()" title="Click to pick or type a date">
+      <div class="day-nav-label nav-label-click" id="day-label" onclick="openDayCalendar()" title="Click to pick a date">
         <div class="dn-date" id="day-date">—</div>
         <div class="dn-sub" id="day-sub"></div>
       </div>
-      <div class="nav-date-edit hidden" id="day-date-edit">
-        <span class="nav-date-fields">
-          <input type="text" inputmode="numeric" maxlength="2" class="ndf-seg ndf-dd" id="day-dd"
-            placeholder="DD" oninput="onSegInput('day','dd')" onkeydown="onSegKey(event,'day','dd')"
-            onfocus="this.select()">
-          <span class="ndf-sep">/</span>
-          <input type="text" inputmode="numeric" maxlength="2" class="ndf-seg ndf-mm" id="day-mm"
-            placeholder="MM" oninput="onSegInput('day','mm')" onkeydown="onSegKey(event,'day','mm')"
-            onfocus="this.select()">
-          <span class="ndf-sep">/</span>
-          <input type="text" inputmode="numeric" maxlength="4" class="ndf-seg ndf-yyyy" id="day-yyyy"
-            placeholder="YYYY" oninput="onSegInput('day','yyyy')" onkeydown="onSegKey(event,'day','yyyy')"
-            onfocus="this.select()">
-        </span>
-        <button type="button" class="nav-cal-btn" title="Open calendar"
-          onmousedown="event.preventDefault()" onclick="showDayPicker()">📅</button>
-        <input type="date" class="nav-native-date" id="day-date-input" onchange="onNativeDayPick(this.value)">
-      </div>
-      <button class="day-nav-btn" onclick="dayShift(1)" title="Tomorrow">›</button>
       <button class="day-today-btn" id="day-today-btn" onclick="dayToday()">Today</button>
+      <button class="day-nav-btn" onclick="dayShift(1)" title="Tomorrow">›</button>
     </div>
     <div class="day-summary" id="day-summary"></div>
     <div class="day-add-row">
@@ -1674,23 +1666,9 @@
   <div class="tab-page" id="page-calendar">
     <div class="cal-nav">
       <button class="cal-nav-btn" onclick="calShift(-1)" title="Previous month">‹</button>
-      <div class="cal-nav-label nav-label-click" id="cal-label" onclick="openCalDatePicker()" title="Click to pick or type a month">
+      <div class="cal-nav-label nav-label-click" id="cal-label" onclick="openCalCalendar()" title="Click to pick a month">
         <div class="cn-month" id="cal-month">—</div>
         <div class="cn-sub" id="cal-sub"></div>
-      </div>
-      <div class="nav-date-edit hidden" id="cal-date-edit">
-        <span class="nav-date-fields">
-          <input type="text" inputmode="numeric" maxlength="2" class="ndf-seg ndf-mm" id="cal-mm"
-            placeholder="MM" oninput="onCalSegInput('mm')" onkeydown="onCalSegKey(event,'mm')"
-            onfocus="this.select()">
-          <span class="ndf-sep">/</span>
-          <input type="text" inputmode="numeric" maxlength="4" class="ndf-seg ndf-yyyy" id="cal-yyyy"
-            placeholder="YYYY" oninput="onCalSegInput('yyyy')" onkeydown="onCalSegKey(event,'yyyy')"
-            onfocus="this.select()">
-        </span>
-        <button type="button" class="nav-cal-btn" title="Open calendar"
-          onmousedown="event.preventDefault()" onclick="showCalPicker()">📅</button>
-        <input type="date" class="nav-native-date" id="cal-date-input" onchange="onNativeCalPick(this.value)">
       </div>
       <button class="cal-nav-btn" onclick="calShift(1)" title="Next month">›</button>
       <button class="cal-today-btn" id="cal-today-btn" onclick="calToday()">This month</button>
@@ -3151,9 +3129,9 @@ function renderTaskCard(p, t, idx, gi, gcount) {
       '<label class="teb-lbl">Priority</label>' +
       '<select title="Priority" onchange="setTaskPriority(' + idx + ',this.value)">' + priOpts + '</select>' +
       '<span class="te-spacer"></span>' +
-      '<button class="edit-icon-btn" title="Move up" ' + (gi === 0 ? 'disabled' : '') +
+      '<button class="edit-icon-btn" title="Move up"' +
         ' onclick="moveTask(' + idx + ',-1)">▲</button>' +
-      '<button class="edit-icon-btn" title="Move down" ' + (gi === gcount - 1 ? 'disabled' : '') +
+      '<button class="edit-icon-btn" title="Move down"' +
         ' onclick="moveTask(' + idx + ',1)">▼</button>' +
       '<button class="edit-icon-btn del" title="Delete task" ' +
         'onclick="deleteTask(' + idx + ')">✕</button>' +
@@ -3800,95 +3778,17 @@ let calSelectedDay = '';  // выбранный день (ISO) — раскры�
 function calShift(dir) { calOffset += dir; calSelectedDay = ''; renderCalendar(); }
 function calToday() { calOffset = 0; calSelectedDay = ''; renderCalendar(); }
 
-// ----- редактор месяца (ММ/ГГГГ) с автоперескоком -----
-function calFillSegs(year, month) {
-  const eMM = document.getElementById('cal-mm');
-  const eYY = document.getElementById('cal-yyyy');
-  if (eMM) eMM.value = String(month + 1).padStart(2, '0');
-  if (eYY) eYY.value = String(year);
-}
-// прочитать {year, month0} из сегментов; null если неполно/некорректно
-function calReadSegs() {
-  const mm = (document.getElementById('cal-mm') || {}).value || '';
-  const yyyy = (document.getElementById('cal-yyyy') || {}).value || '';
-  if (!/^\d{1,2}$/.test(mm) || !/^\d{4}$/.test(yyyy)) return null;
-  const m = parseInt(mm, 10), y = parseInt(yyyy, 10);
-  if (m < 1 || m > 12) return null;
-  return { year: y, month0: m - 1 };
-}
-function onCalSegInput(seg) {
-  const el = document.getElementById('cal-' + seg);
-  if (!el) return;
-  el.value = el.value.replace(/\D/g, '');
-  const max = (seg === 'yyyy') ? 4 : 2;
-  if (el.value.length >= max) {
-    if (seg === 'mm') {
-      const next = document.getElementById('cal-yyyy');
-      if (next) { next.focus(); next.select(); }
-    } else {
-      applyCalSegs();
-    }
-  }
-}
-function onCalSegKey(ev, seg) {
-  if (ev.key === 'Enter') { ev.preventDefault(); applyCalSegs(); return; }
-  if (ev.key === 'Backspace') {
-    const el = document.getElementById('cal-' + seg);
-    if (el && el.value === '' && seg === 'yyyy') {
-      ev.preventDefault();
-      const prev = document.getElementById('cal-mm');
-      if (prev) { prev.focus(); prev.select(); }
-    }
-  }
-}
-function applyCalSegs() {
-  const v = calReadSegs();
-  if (!v) return;
-  jumpToMonth(v.year, v.month0);
-}
-function openCalDatePicker() {
-  const edit = document.getElementById('cal-date-edit');
-  const label = document.getElementById('cal-label');
-  if (!edit || !label) return;
+// клик по месяцу — открыть свой календарь (режим выбора месяца)
+function openCalCalendar() {
+  const anchor = document.getElementById('cal-label');
   const ms = calMonthStart(calOffset);
-  calFillSegs(ms.getFullYear(), ms.getMonth());
-  label.classList.add('hidden');
-  edit.classList.remove('hidden');
-  const eMM = document.getElementById('cal-mm');
-  if (eMM) { eMM.focus(); eMM.select(); }
-}
-function showCalPicker() {
-  const inp = document.getElementById('cal-date-input');
-  if (!inp) return;
-  const v = calReadSegs();
-  if (v) {
-    inp.value = v.year + '-' + String(v.month0 + 1).padStart(2, '0') + '-01';
-  } else {
-    const ms = calMonthStart(calOffset);
-    inp.value = dateToISO(ms);
-  }
-  if (typeof inp.showPicker === 'function') {
-    try { inp.showPicker(); return; } catch (e) {}
-  }
-  inp.focus();
-}
-function onNativeCalPick(iso) {
-  if (!iso) return;
-  const parts = iso.split('-');
-  if (parts.length !== 3) return;
-  const y = +parts[0], m0 = +parts[1] - 1;
-  calFillSegs(y, m0);
-  jumpToMonth(y, m0);
-}
-function closeCalDatePicker() {
-  const edit = document.getElementById('cal-date-edit');
-  const label = document.getElementById('cal-label');
-  if (edit) edit.classList.add('hidden');
-  if (label) label.classList.remove('hidden');
+  openDatePopup(anchor, dateToISO(ms), function (iso) {
+    const parts = iso.split('-');
+    jumpToMonth(+parts[0], +parts[1] - 1);
+  }, 'month');
 }
 // перейти к указанному месяцу
 function jumpToMonth(year, month0) {
-  closeCalDatePicker();
   const now = new Date();
   calOffset = (year - now.getFullYear()) * 12 + (month0 - now.getMonth());
   calSelectedDay = '';
@@ -4147,120 +4047,19 @@ function renderCalDayPanel() {
 }
 
 
-// ===== редактор даты из трёх сегментов (ДД/ММ/ГГГГ) с автоперескоком =====
-// заполнить сегменты из ISO-даты
-function fillSegs(prefix, iso) {
-  const parts = (iso || '').split('-');
-  const yyyy = parts[0] || '';
-  const mm = parts[1] || '';
-  const dd = parts[2] || '';
-  const eDD = document.getElementById(prefix + '-dd');
-  const eMM = document.getElementById(prefix + '-mm');
-  const eYY = document.getElementById(prefix + '-yyyy');
-  if (eDD) eDD.value = dd;
-  if (eMM) eMM.value = mm;
-  if (eYY) eYY.value = yyyy;
-}
-// прочитать ISO из сегментов; null если неполно/некорректно
-function readSegs(prefix) {
-  const dd = (document.getElementById(prefix + '-dd') || {}).value || '';
-  const mm = (document.getElementById(prefix + '-mm') || {}).value || '';
-  const yyyy = (document.getElementById(prefix + '-yyyy') || {}).value || '';
-  if (!/^\d{1,2}$/.test(dd) || !/^\d{1,2}$/.test(mm) || !/^\d{4}$/.test(yyyy)) return null;
-  const d = parseInt(dd, 10), m = parseInt(mm, 10), y = parseInt(yyyy, 10);
-  if (m < 1 || m > 12) return null;
-  if (d < 1 || d > 31) return null;
-  // проверка реальной даты (например 31 февраля)
-  const dt = new Date(y, m - 1, d);
-  if (dt.getFullYear() !== y || dt.getMonth() !== m - 1 || dt.getDate() !== d) return null;
-  return y + '-' + String(m).padStart(2, '0') + '-' + String(d).padStart(2, '0');
-}
-// порядок сегментов и переход к следующему
-const SEG_ORDER = ['dd', 'mm', 'yyyy'];
-function focusSeg(prefix, seg) {
-  const el = document.getElementById(prefix + '-' + seg);
-  if (el) { el.focus(); el.select(); }
-}
-// ввод в сегмент: только цифры, автоперескок при заполнении
-function onSegInput(prefix, seg) {
-  const el = document.getElementById(prefix + '-' + seg);
-  if (!el) return;
-  // оставляем только цифры
-  el.value = el.value.replace(/\D/g, '');
-  const max = (seg === 'yyyy') ? 4 : 2;
-  if (el.value.length >= max) {
-    const i = SEG_ORDER.indexOf(seg);
-    if (i < SEG_ORDER.length - 1) {
-      focusSeg(prefix, SEG_ORDER[i + 1]);
-    } else {
-      // последний сегмент заполнен — пробуем применить дату
-      applySegs(prefix);
-    }
-  }
-}
-// клавиши: Enter — применить; Backspace на пустом — к предыдущему сегменту
-function onSegKey(ev, prefix, seg) {
-  if (ev.key === 'Enter') {
-    ev.preventDefault();
-    applySegs(prefix);
-    return;
-  }
-  if (ev.key === 'Backspace') {
-    const el = document.getElementById(prefix + '-' + seg);
-    if (el && el.value === '') {
-      const i = SEG_ORDER.indexOf(seg);
-      if (i > 0) { ev.preventDefault(); focusSeg(prefix, SEG_ORDER[i - 1]); }
-    }
-  }
-}
-function applySegs(prefix) {
-  const iso = readSegs(prefix);
-  if (!iso) return;   // дата ещё не полная/некорректная — ждём
-  if (prefix === 'day') jumpToDay(iso);
-  else jumpToWeek(iso);
-}
-
 // ===== ТАБ «ДЕНЬ» =====
 let dayOffset = 0;   // 0 = сегодня, -1 вчера, +1 завтра
 
 function dayShift(dir) { dayOffset += dir; renderDay(); }
 function dayToday() { dayOffset = 0; renderDay(); }
 
-// открыть редактор даты (сегменты ДД/ММ/ГГГГ, фокус на день)
-function openDayDatePicker() {
-  const edit = document.getElementById('day-date-edit');
-  const label = document.getElementById('day-label');
-  if (!edit || !label) return;
-  fillSegs('day', dayISO());
-  label.classList.add('hidden');
-  edit.classList.remove('hidden');
-  focusSeg('day', 'dd');
+// клик по дате — открыть свой календарь
+function openDayCalendar() {
+  const anchor = document.getElementById('day-label');
+  openDatePopup(anchor, dayISO(), function (iso) { jumpToDay(iso); }, 'day');
 }
-// открыть нативный календарь (по клику на кнопку — валидный жест)
-function showDayPicker() {
-  const inp = document.getElementById('day-date-input');
-  if (!inp) return;
-  inp.value = readSegs('day') || dayISO();
-  if (typeof inp.showPicker === 'function') {
-    try { inp.showPicker(); return; } catch (e) {}
-  }
-  inp.focus();
-}
-// выбор в нативном календаре заполняет сегменты и применяет дату
-function onNativeDayPick(iso) {
-  if (!iso) return;
-  fillSegs('day', iso);
-  jumpToDay(iso);
-}
-function closeDayDatePicker() {
-  const edit = document.getElementById('day-date-edit');
-  const label = document.getElementById('day-label');
-  if (edit) edit.classList.add('hidden');
-  if (label) label.classList.remove('hidden');
-}
-// перейти к конкретной дате (вводом или из календаря)
+// перейти к конкретной дате
 function jumpToDay(iso) {
-  closeDayDatePicker();
   if (!iso) return;
   const parts = iso.split('-');
   if (parts.length !== 3) return;
@@ -5858,39 +5657,13 @@ function weekToday() {
   renderWeek();
 }
 
-// открыть редактор даты для недели (сегменты ДД/ММ/ГГГГ)
-function openWeekDatePicker() {
-  const edit = document.getElementById('week-date-edit');
-  const label = document.getElementById('week-label');
-  if (!edit || !label) return;
-  fillSegs('week', weekDates(weekOffset)[0]);   // понедельник текущей недели
-  label.classList.add('hidden');
-  edit.classList.remove('hidden');
-  focusSeg('week', 'dd');
-}
-function showWeekPicker() {
-  const inp = document.getElementById('week-date-input');
-  if (!inp) return;
-  inp.value = readSegs('week') || weekDates(weekOffset)[0];
-  if (typeof inp.showPicker === 'function') {
-    try { inp.showPicker(); return; } catch (e) {}
-  }
-  inp.focus();
-}
-function onNativeWeekPick(iso) {
-  if (!iso) return;
-  fillSegs('week', iso);
-  jumpToWeek(iso);
-}
-function closeWeekDatePicker() {
-  const edit = document.getElementById('week-date-edit');
-  const label = document.getElementById('week-label');
-  if (edit) edit.classList.add('hidden');
-  if (label) label.classList.remove('hidden');
+// клик по периоду — открыть свой календарь
+function openWeekCalendar() {
+  const anchor = document.getElementById('week-label');
+  openDatePopup(anchor, weekDates(weekOffset)[0], function (iso) { jumpToWeek(iso); }, 'day');
 }
 // перейти к неделе, содержащей выбранную дату
 function jumpToWeek(iso) {
-  closeWeekDatePicker();
   if (!iso) return;
   const parts = iso.split('-');
   if (parts.length !== 3) return;
@@ -6213,6 +5986,191 @@ function renderAll() {
 }
 
 // ===== СТАРТ =====
+// ===== свой выпадающий календарь (единый для day/week/calendar) =====
+const DP = {
+  el: null,        // DOM попапа
+  onPick: null,    // колбэк выбора (iso)
+  mode: 'day',     // 'day' | 'month'
+  viewY: 0,        // год просмотра
+  viewM: 0,        // месяц просмотра (0-11)
+  selISO: '',      // выбранная дата (для подсветки)
+  view: 'days'     // 'days' | 'months' | 'years'
+};
+const DP_MONTHS = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+const DP_DOW = ['Mo','Tu','We','Th','Fr','Sa','Su'];
+
+function openDatePopup(anchor, initialISO, onPick, mode) {
+  closeDatePopup();
+  DP.onPick = onPick;
+  DP.mode = mode || 'day';
+  DP.selISO = initialISO || '';
+  const parts = (initialISO || dateToISO(new Date())).split('-');
+  DP.viewY = +parts[0];
+  DP.viewM = +parts[1] - 1;
+  DP.view = (DP.mode === 'month') ? 'months' : 'days';
+
+  const pop = document.createElement('div');
+  pop.className = 'dp-pop';
+  DP.el = pop;
+  document.body.appendChild(pop);
+  renderDatePopup();
+  positionDatePopup(anchor);
+
+  // закрытие по клику вне и по Esc (вешаем на следующий тик, чтобы не словить текущий клик)
+  setTimeout(function () {
+    document.addEventListener('mousedown', dpOutside, true);
+    document.addEventListener('keydown', dpEsc, true);
+  }, 0);
+}
+function closeDatePopup() {
+  if (DP.el && DP.el.parentNode) DP.el.parentNode.removeChild(DP.el);
+  DP.el = null; DP.onPick = null;
+  document.removeEventListener('mousedown', dpOutside, true);
+  document.removeEventListener('keydown', dpEsc, true);
+}
+function dpOutside(e) {
+  if (DP.el && !DP.el.contains(e.target)) closeDatePopup();
+}
+function dpEsc(e) {
+  if (e.key === 'Escape') closeDatePopup();
+}
+function positionDatePopup(anchor) {
+  if (!DP.el || !anchor) return;
+  const r = anchor.getBoundingClientRect();
+  const pw = DP.el.offsetWidth || 256;
+  let left = r.left + r.width / 2 - pw / 2 + window.scrollX;
+  let top = r.bottom + 6 + window.scrollY;
+  // не вылезать за края
+  const margin = 8;
+  if (left < margin) left = margin;
+  const maxLeft = window.scrollX + document.documentElement.clientWidth - pw - margin;
+  if (left > maxLeft) left = maxLeft;
+  DP.el.style.left = left + 'px';
+  DP.el.style.top = top + 'px';
+}
+function renderDatePopup() {
+  if (!DP.el) return;
+  if (DP.view === 'years') { DP.el.innerHTML = dpYearsHtml(); return; }
+  if (DP.view === 'months') { DP.el.innerHTML = dpMonthsHtml(); return; }
+  DP.el.innerHTML = dpDaysHtml();
+}
+// --- дни ---
+function dpDaysHtml() {
+  const todayI = dateToISO(new Date());
+  const first = new Date(DP.viewY, DP.viewM, 1);
+  const startDow = (first.getDay() + 6) % 7;   // 0=пн
+  const daysInMonth = new Date(DP.viewY, DP.viewM + 1, 0).getDate();
+  const prevDays = new Date(DP.viewY, DP.viewM, 0).getDate();
+
+  let h = '<div class="dp-head">' +
+    '<div class="dp-nav" onclick="dpShiftMonth(-1)">‹</div>' +
+    '<div class="dp-title" onclick="dpShowYears()">' + DP_MONTHS[DP.viewM] +
+      '<span class="dp-caret">▾</span></div>' +
+    '<div class="dp-nav" onclick="dpShiftMonth(1)">›</div>' +
+    '</div>';
+  h += '<div class="dp-yearbar">' +
+    '<div class="dp-ynav" onclick="dpShiftYear(-1)">‹</div>' +
+    '<div class="dp-yval" onclick="dpShowYears()">' + DP.viewY + '</div>' +
+    '<div class="dp-ynav" onclick="dpShiftYear(1)">›</div>' +
+    '</div>';
+  h += '<div class="dp-grid">';
+  DP_DOW.forEach(function (d) { h += '<div class="dp-dow">' + d + '</div>'; });
+  // хвост прошлого месяца
+  for (let i = 0; i < startDow; i++) {
+    const dnum = prevDays - startDow + 1 + i;
+    h += '<div class="dp-day dp-other">' + dnum + '</div>';
+  }
+  // дни месяца
+  for (let d = 1; d <= daysInMonth; d++) {
+    const iso = DP.viewY + '-' + String(DP.viewM + 1).padStart(2, '0') + '-' + String(d).padStart(2, '0');
+    let cls = 'dp-day';
+    if (iso === todayI) cls += ' dp-today';
+    if (iso === DP.selISO) cls += ' dp-sel';
+    h += '<div class="' + cls + '" onclick="dpPickDay(\'' + iso + '\')">' + d + '</div>';
+  }
+  // начало следующего месяца до кратности 7
+  const cells = startDow + daysInMonth;
+  const tail = (7 - (cells % 7)) % 7;
+  for (let i = 1; i <= tail; i++) {
+    h += '<div class="dp-day dp-other">' + i + '</div>';
+  }
+  h += '</div>';
+  return h;
+}
+// --- месяцы ---
+function dpMonthsHtml() {
+  const now = new Date();
+  let h = '<div class="dp-head">' +
+    '<div class="dp-nav" onclick="dpShiftYear(-1)">‹</div>' +
+    '<div class="dp-title" onclick="dpShowYears()">' + DP.viewY +
+      '<span class="dp-caret">▾</span></div>' +
+    '<div class="dp-nav" onclick="dpShiftYear(1)">›</div>' +
+    '</div>';
+  h += '<div class="dp-years">';   // та же сетка 4-в-ряд
+  for (let m = 0; m < 12; m++) {
+    let cls = 'dp-year';
+    if (DP.viewY === now.getFullYear() && m === now.getMonth()) cls += ' dp-today';
+    const selParts = (DP.selISO || '').split('-');
+    if (+selParts[0] === DP.viewY && +selParts[1] - 1 === m) cls += ' dp-sel';
+    h += '<div class="' + cls + '" onclick="dpPickMonth(' + m + ')">' + DP_MONTHS[m] + '</div>';
+  }
+  h += '</div>';
+  return h;
+}
+// --- годы ---
+function dpYearsHtml() {
+  const now = new Date();
+  const base = DP.viewY - (DP.viewY % 12);   // блок из 12 лет
+  let h = '<div class="dp-head">' +
+    '<div class="dp-nav" onclick="dpShiftYearBlock(-1)">‹</div>' +
+    '<div class="dp-title">' + base + ' – ' + (base + 11) + '</div>' +
+    '<div class="dp-nav" onclick="dpShiftYearBlock(1)">›</div>' +
+    '</div>';
+  h += '<div class="dp-years">';
+  for (let i = 0; i < 12; i++) {
+    const y = base + i;
+    let cls = 'dp-year';
+    if (y === now.getFullYear()) cls += ' dp-today';
+    if (y === DP.viewY) cls += ' dp-sel';
+    h += '<div class="' + cls + '" onclick="dpPickYear(' + y + ')">' + y + '</div>';
+  }
+  h += '</div>';
+  return h;
+}
+// --- навигация ---
+function dpShiftMonth(dir) {
+  DP.viewM += dir;
+  if (DP.viewM < 0) { DP.viewM = 11; DP.viewY--; }
+  else if (DP.viewM > 11) { DP.viewM = 0; DP.viewY++; }
+  renderDatePopup();
+}
+function dpShiftYear(dir) { DP.viewY += dir; renderDatePopup(); }
+function dpShiftYearBlock(dir) { DP.viewY += dir * 12; renderDatePopup(); }
+function dpShowYears() { DP.view = 'years'; renderDatePopup(); }
+function dpPickYear(y) {
+  DP.viewY = y;
+  DP.view = (DP.mode === 'month') ? 'months' : 'days';
+  renderDatePopup();
+}
+function dpPickMonth(m) {
+  DP.viewM = m;
+  if (DP.mode === 'month') {
+    const iso = DP.viewY + '-' + String(m + 1).padStart(2, '0') + '-01';
+    const cb = DP.onPick;
+    closeDatePopup();
+    if (cb) cb(iso);
+  } else {
+    DP.view = 'days';
+    renderDatePopup();
+  }
+}
+function dpPickDay(iso) {
+  const cb = DP.onPick;
+  closeDatePopup();
+  if (cb) cb(iso);
+}
+
+
 function init() {
   var step = 'start';
   try {
