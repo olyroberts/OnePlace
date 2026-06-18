@@ -4411,7 +4411,8 @@ function renderBrainstormTask(t, p, todayI) {
     const it = { task: t, project: p, logRec: null };
     let eh = renderDayTaskEdit(it, todayI);
     // подменяем save-обработчик на брэйнстормовский, чтобы перерисовать этот таб
-    eh = eh.replace("saveDayEdit('" + t.tid + "')", "saveBrainstormEdit('" + t.tid + "')");
+    // (заменяем ВСЕ вхождения: и onkeydown поля имени, и кнопку Save)
+    eh = eh.split("saveDayEdit('" + t.tid + "')").join("saveBrainstormEdit('" + t.tid + "')");
     return eh;
   }
 
