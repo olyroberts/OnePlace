@@ -2241,10 +2241,6 @@ function saveTimeEntry(opts) {
 
   const date = dateEl ? dateEl.value : todayISO();
   const projectNum = projEl && projEl.value ? parseInt(projEl.value, 10) : null;
-  if (!projectNum) {
-    showErrorBar('Choose a project to log the time against.');
-    return;
-  }
   const taskTid = taskEl && taskEl.value ? taskEl.value : '';
   let taskName = '';
   if (taskTid) {
@@ -3660,9 +3656,11 @@ function renderTimeLog() {
       if (projNums.length) {
         h += '<div class="time-proj-sub">';
         projNums.forEach(function (pn) {
-          const p = state.projects.find(function (x) { return x.num === parseInt(pn,10); });
+          const pnInt = parseInt(pn, 10);
+          const p = state.projects.find(function (x) { return x.num === pnInt; });
+          const label = p ? p.short : (pnInt === 0 ? 'No project' : 'Project deleted');
           h += '<div class="tps-row">' +
-            '<span class="tps-name">' + escapeHtml(p ? p.short : 'Project deleted') + '</span>' +
+            '<span class="tps-name">' + escapeHtml(label) + '</span>' +
             '<span class="tps-val">' + fmtDuration(data.projects[pn]) + '</span></div>';
         });
         h += '</div>';
@@ -3755,8 +3753,10 @@ function renderTimeEntry(r) {
   h += '<div class="time-entry-body">';
   h += '<div class="time-entry-top">';
   h += '<span class="log-kind log-kind-time">Time</span>';
-  h += '<span class="time-entry-proj" style="background:' + color + '">' +
-    escapeHtml(p ? p.short : 'Project deleted') + '</span>';
+  if (r.projectNum) {
+    h += '<span class="time-entry-proj" style="background:' + color + '">' +
+      escapeHtml(p ? p.short : 'Project deleted') + '</span>';
+  }
   if (r.taskName) h += '<span class="time-entry-task">' + escapeHtml(r.taskName) + '</span>';
   h += '</div>';
   if (r.note) h += '<div class="time-entry-note">' + escapeHtml(r.note) + '</div>';
