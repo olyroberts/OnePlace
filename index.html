@@ -924,6 +924,18 @@
   .te-modal-field textarea:focus { outline: none; border-color: var(--gold); }
   .te-modal-row { display: flex; gap: 10px; }
   .te-modal-row .te-modal-field { flex: 1; }
+  /* переключатель режима добавления (New / Existing) */
+  .dt-mode-switch {
+    display: flex; gap: 4px; padding: 3px; margin-bottom: 12px;
+    background: var(--surface-2); border: 1px solid var(--line); border-radius: 9px;
+  }
+  .dt-mode-switch button {
+    flex: 1; font-family: inherit; font-size: 12.5px; font-weight: 600;
+    padding: 7px 0; border: none; border-radius: 7px; cursor: pointer;
+    background: transparent; color: var(--text-dim); transition: all 0.12s;
+  }
+  .dt-mode-switch button.active { background: var(--surface); color: var(--text); box-shadow: 0 1px 3px rgba(0,0,0,0.08); }
+  .dt-mode-switch button:hover:not(.active) { color: var(--text); }
   .te-dur-display {
     font-size: 13px; color: var(--text-dim);
     background: #e9e3d2; padding: 8px 11px; border-radius: 7px;
@@ -4256,45 +4268,138 @@ function removeDayTaskSub(i) {
 function addDayTask() {
   const dISO = dayISO();
   dayTaskSubs = [];
+  dayAddMode = 'new';
 
   // список проектов по сферам (как в окне записи времени), + вариант без проекта
   let projOpts = '<option value="">— no project —</option>';
+  let projOptsExisting = '<option value="">— choose a project —</option>';
   state.spheres.forEach(function (s) {
     const inSphere = state.projects.filter(function (p) {
       return p.sphere === s.id && p.status !== 'paused';
     });
     if (!inSphere.length) return;
-    projOpts += '<optgroup label="' + escapeHtml(s.id + ' · ' + s.name) + '">';
+    let grp = '<optgroup label="' + escapeHtml(s.id + ' · ' + s.name) + '">';
     inSphere.forEach(function (p) {
-      projOpts += '<option value="' + p.num + '">' + escapeHtml(p.short) + '</option>';
+      grp += '<option value="' + p.num + '">' + escapeHtml(p.short) + '</option>';
     });
-    projOpts += '</optgroup>';
+    grp += '</optgroup>';
+    projOpts += grp;
+    projOptsExisting += grp;
   });
+  // проект Inbox («No project») — тоже источник существующих задач
+  const inbox = state.projects.find(function (x) { return x.isInbox; });
+  if (inbox) projOptsExisting += '<option value="' + inbox.num + '">No project</option>';
 
   const bodyHtml =
-    '<div class="te-modal-field"><label>Task name</label>' +
-      '<input type="text" id="dt-name" placeholder="What needs doing"></div>' +
-    '<div class="te-modal-field"><label>Note / trigger (optional)</label>' +
-      '<input type="text" id="dt-hint" placeholder="Optional"></div>' +
-    '<div class="te-modal-field"><label>Project (optional)</label>' +
-      '<select id="dt-project">' + projOpts + '</select></div>' +
-    '<div class="te-modal-field"><label>Subtasks (optional)</label>' +
-      '<div id="dt-subs"></div>' +
-      '<div class="sub-add-row">' +
-        '<input type="text" id="dt-sub-new" placeholder="New subtask" ' +
-          'onkeydown="if(event.key===\'Enter\'){event.preventDefault();addDayTaskSub();}">' +
-        '<button type="button" onclick="addDayTaskSub()">+</button>' +
-      '</div></div>';
+    '<div class="dt-mode-switch">' +
+      '<button id="dt-mode-new" class="active" onclick="setDayAddMode(\'new\')">New task</button>' +
+      '<button id="dt-mode-existing" onclick="setDayAddMode(\'existing\')">Existing task</button>' +
+    '</div>' +
+    // --- блок новой задачи ---
+    '<div id="dt-block-new">' +
+      '<div class="te-modal-field"><label>Task name</label>' +
+        '<input type="text" id="dt-name" placeholder="What needs doing"></div>' +
+      '<div class="te-modal-field"><label>Note / trigger (optional)</label>' +
+        '<input type="text" id="dt-hint" placeholder="Optional"></div>' +
+      '<div class="te-modal-field"><label>Project (optional)</label>' +
+        '<select id="dt-project">' + projOpts + '</select></div>' +
+      '<div class="te-modal-field"><label>Subtasks (optional)</label>' +
+        '<div id="dt-subs"></div>' +
+        '<div class="sub-add-row">' +
+          '<input type="text" id="dt-sub-new" placeholder="New subtask" ' +
+            'onkeydown="if(event.key===\'Enter\'){event.preventDefault();addDayTaskSub();}">' +
+          '<button type="button" onclick="addDayTaskSub()">+</button>' +
+        '</div></div>' +
+    '</div>' +
+    // --- блок существующей задачи ---
+    '<div id="dt-block-existing" class="hidden">' +
+      '<div class="te-modal-field"><label>Project</label>' +
+        '<select id="dt-ex-project" onchange="dayExistingFillTasks(this.value)">' + projOptsExisting + '</select></div>' +
+      '<div class="te-modal-field"><label>Task</label>' +
+        '<select id="dt-ex-task"><option value="">— choose a project first —</option></select></div>' +
+      '<div class="de-note" style="margin-top:2px;">The task will be moved to this day. If it had another date, it changes to this one.</div>' +
+    '</div>';
 
   openCustomModal('Add task · ' + fmtDateHuman(dISO), bodyHtml, [
     { label: 'Cancel', kind: 'ghost', action: function () { dayTaskSubs = []; closeModal(); } },
-    { label: 'Add', kind: 'primary', action: function () { saveDayTask(dISO); } }
+    { label: 'Add', kind: 'primary', action: function () {
+        if (dayAddMode === 'existing') saveDayExisting(dISO);
+        else saveDayTask(dISO);
+      } }
   ]);
 
   setTimeout(function () {
     const el = document.getElementById('dt-name');
     if (el) el.focus();
   }, 30);
+}
+
+// переключение режима окна добавления
+let dayAddMode = 'new';
+function setDayAddMode(mode) {
+  dayAddMode = mode;
+  const bNew = document.getElementById('dt-mode-new');
+  const bEx = document.getElementById('dt-mode-existing');
+  const blkNew = document.getElementById('dt-block-new');
+  const blkEx = document.getElementById('dt-block-existing');
+  if (!bNew || !bEx || !blkNew || !blkEx) return;
+  const isNew = (mode === 'new');
+  bNew.classList.toggle('active', isNew);
+  bEx.classList.toggle('active', !isNew);
+  blkNew.classList.toggle('hidden', !isNew);
+  blkEx.classList.toggle('hidden', isNew);
+  if (isNew) {
+    const el = document.getElementById('dt-name');
+    if (el) el.focus();
+  } else {
+    const el = document.getElementById('dt-ex-project');
+    if (el) el.focus();
+  }
+}
+
+// наполнить список задач выбранного проекта (только неповторяющиеся)
+function dayExistingFillTasks(pnumStr) {
+  const sel = document.getElementById('dt-ex-task');
+  if (!sel) return;
+  const pnum = parseInt(pnumStr, 10);
+  const p = isNaN(pnum) ? null : state.projects.find(function (x) { return x.num === pnum; });
+  if (!p) {
+    sel.innerHTML = '<option value="">— choose a project first —</option>';
+    return;
+  }
+  const dISO = dayISO();
+  const cand = (p.tasks || []).filter(function (t) {
+    normalizeTask(t);
+    if (t.type === 'rep') return false;        // повторяющиеся не предлагаем
+    if (t.date === dISO) return false;         // уже на этот день
+    return true;
+  });
+  if (!cand.length) {
+    sel.innerHTML = '<option value="">— no eligible tasks —</option>';
+    return;
+  }
+  let opts = '<option value="">— choose a task —</option>';
+  cand.forEach(function (t) {
+    const tag = t.date ? ' (' + fmtDateHuman(t.date) + ')' : '';
+    opts += '<option value="' + t.tid + '">' + escapeHtml(t.name || 'Untitled') + tag + '</option>';
+  });
+  sel.innerHTML = opts;
+}
+
+// перенести существующую задачу на этот день
+function saveDayExisting(dISO) {
+  const sel = document.getElementById('dt-ex-task');
+  const tid = sel ? sel.value : '';
+  if (!tid) {
+    showErrorBar('Choose a task to add.');
+    return;
+  }
+  const found = findTaskByTid(tid);
+  if (!found) { showErrorBar('Task not found.'); return; }
+  found.task.date = dISO;     // перенос на выбранный день
+  closeModal();
+  saveState(true);
+  renderAll();
 }
 
 function saveDayTask(dISO) {
