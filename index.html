@@ -3469,12 +3469,24 @@ function moveSub(tIdx, sIdx, dir) {
 }
 
 // ===== ЭКСПОРТ / ИМПОРТ / СБРОС =====
+// базовое имя файла для экспортов: TITLE-dd.mm.yyyy-hh.mm.ss
+function exportFileBase() {
+  const d = new Date();
+  const p2 = function (n) { return String(n).padStart(2, '0'); };
+  const stamp = p2(d.getDate()) + '.' + p2(d.getMonth() + 1) + '.' + d.getFullYear() +
+    '-' + p2(d.getHours()) + '.' + p2(d.getMinutes()) + '.' + p2(d.getSeconds());
+  // имя дашборда → безопасное для файловой системы (пробелы → _, убрать недопустимые символы)
+  let title = (state.appTitle || 'One Place').trim();
+  title = title.replace(/[\/\\:*?"<>|]/g, '').replace(/\s+/g, '_') || 'One_Place';
+  return title + '-' + stamp;
+}
+
 function exportData() {
   const blob = new Blob([JSON.stringify(state, null, 2)], { type: 'application/json' });
   const url = URL.createObjectURL(blob);
   const a = document.createElement('a');
   a.href = url;
-  a.download = 'moya-sistema-' + new Date().toISOString().slice(0, 10) + '.json';
+  a.download = exportFileBase() + '.json';
   a.click();
   URL.revokeObjectURL(url);
 }
@@ -5125,7 +5137,7 @@ function exportWeekDocx() {
   const url = URL.createObjectURL(zipBlob);
   const a = document.createElement('a');
   a.href = url;
-  a.download = 'weekly-plan-' + weekDates(weekOffset)[0] + '.docx';
+  a.download = exportFileBase() + '.docx';
   a.click();
   URL.revokeObjectURL(url);
 }
