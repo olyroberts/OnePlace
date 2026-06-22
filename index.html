@@ -5521,7 +5521,7 @@ function setDayTaskPriority(dISO, tid, val) {
   if (!r) return;
   if (['crit','imp','norm'].indexOf(val) !== -1) r.task.priority = val;
   saveState(true);
-  renderDay();
+  rerenderDayEditHost();
 }
 // смена проекта: живую задачу переносим между проектами; для выполненной — правим запись лога
 function setDayTaskProject(dISO, tid, val) {
@@ -5543,15 +5543,21 @@ function setDayTaskProject(dISO, tid, val) {
     }
   }
   saveState(true);
-  renderDay();
+  rerenderDayEditHost();
 }
 // подзадачи в режиме инлайн-правки дела
+// перерисовать тот таб, из которого открыта edit-форма (день или brainstorm)
+function rerenderDayEditHost() {
+  const bs = document.getElementById('page-brainstorm');
+  if (bs && bs.classList.contains('active')) renderBrainstorm();
+  else renderDay();
+}
 function toggleDaySubEdit(dISO, tid, sIdx) {
   const r = resolveDayEditable(dISO, tid);
   if (!r || !r.task.subs || !r.task.subs[sIdx]) return;
   r.task.subs[sIdx].done = !r.task.subs[sIdx].done;
   saveState(true);
-  renderDay();
+  rerenderDayEditHost();
 }
 function renameDaySub(dISO, tid, sIdx) {
   const r = resolveDayEditable(dISO, tid);
@@ -5563,7 +5569,7 @@ function renameDaySub(dISO, tid, sIdx) {
     const nm = vals.name.trim();
     if (nm) sub.name = nm;
     saveState(true);
-    renderDay();
+    rerenderDayEditHost();
   });
 }
 function deleteDaySub(dISO, tid, sIdx) {
@@ -5571,7 +5577,7 @@ function deleteDaySub(dISO, tid, sIdx) {
   if (!r || !r.task.subs || !r.task.subs[sIdx]) return;
   r.task.subs.splice(sIdx, 1);
   saveState(true);
-  renderDay();
+  rerenderDayEditHost();
 }
 function addDaySubEdit(dISO, tid) {
   const r = resolveDayEditable(dISO, tid);
@@ -5581,9 +5587,9 @@ function addDaySubEdit(dISO, tid) {
   const name = inp.value.trim();
   if (!name) { inp.focus(); return; }
   if (!Array.isArray(r.task.subs)) r.task.subs = [];
-  r.task.subs.push({ name: name, done: false });
+  r.task.subs.push({ name: name, done: false, sid: genId(), date: '' });
   saveState(true);
-  renderDay();
+  rerenderDayEditHost();
   setTimeout(function () {
     const el = document.getElementById('de-sub-new-' + tid);
     if (el) el.focus();
